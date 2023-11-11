@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "ru.alterland_jobs.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "AlterLandJobs.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
