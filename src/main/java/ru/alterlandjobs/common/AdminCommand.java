@@ -7,39 +7,86 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 public class AdminCommand {
-    public static String createJobs;
-    public static String redactJobs;
-    public static String deleteJobs;
+    public static List<String> listJobs = new ArrayList<>();
+    public static List<String> descriptionJobs = new ArrayList<>();
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
                 Commands.literal("jobs")
+
                         .then(Commands.literal("edit")
-                                .executes(AdminCommand::editJobs)
+                                .then(Commands.argument("jobName", StringArgumentType.string())
+                                        .then(Commands.argument("descriptionNEW", StringArgumentType.greedyString   ())
+                                                .executes(context -> editJobs(context, StringArgumentType.getString(context, "jobName"), StringArgumentType.getString(context, "descriptionNEW") ))
+                                        )
+                                )
+                        )
 
                         .then(Commands.literal("delete")
-                                .executes(AdminCommand::deleteJobs)))
+                                .then(Commands.argument("deleteJobs", StringArgumentType.string())
+                                        .executes(context -> deleteJobs(context, StringArgumentType.getString(context, "deleteJobs")
+                                                )
+                                        )
+                                )
+                        )
 
                         .then(Commands.literal("create")
                                 .then(Commands.argument("jobName", StringArgumentType.string())
-                                        .executes(context -> createJobs(context, StringArgumentType.getString(context, "jobName")))))
+                                        .then(Commands.argument("description", StringArgumentType.greedyString())
+                                                .executes(context -> createJobs(context, StringArgumentType.getString(context, "jobName"), StringArgumentType.getString(context, "description")))
+                                        )
+                                        .executes(context -> createJobs(context, StringArgumentType.getString(context, "jobName"), "без описания")
+                                        )
+                                )
+                        )
         );
     }
-    private static int editJobs(CommandContext<CommandSource> context) {
+
+    private static int editJobs(CommandContext<CommandSource> context, String jobName, String descriptionNEW) {
         CommandSource source = context.getSource();
-        source.sendSuccess(new StringTextComponent(createJobs + " изменение принято"), true);
+        if (AdminCommand.listJobs.contains(jobName)) {
+            source.sendSuccess(new StringTextComponent("Изменение принято"), true);
+            descriptionJobs.set(0, descriptionNEW);
+        }
+        else{
+            source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
+
+        }
         return 1;
     }
-    private static int deleteJobs(CommandContext<CommandSource> context) {
+
+    private static int deleteJobs(CommandContext<CommandSource> context, String deleteJobs) {
         CommandSource source = context.getSource();
-        source.sendSuccess(new StringTextComponent(createJobs + " работа удалена"), true);
+        if (listJobs.contains(deleteJobs)) {
+            source.sendSuccess(new StringTextComponent(  "Работа "+ deleteJobs +  " удалена"), true);
+            int index = listJobs.indexOf(deleteJobs);
+            listJobs.remove(index);
+            descriptionJobs.remove(index);
+
+        } else {
+            source.sendSuccess(new StringTextComponent("Такой работы нет, её нельзя удалить "), true);
+
+        }
         return 1;
     }
-    private static int createJobs(CommandContext<CommandSource> context, String jobName) {
+
+    private static int createJobs(CommandContext<CommandSource> context, String jobName, String description) {
         CommandSource source = context.getSource();
-        PlayerCommand.listJobs.add(jobName);
-        source.sendSuccess(new StringTextComponent(jobName + " работа создана"), true);
+        if (description.contains("без описания")) {
+            source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана " + description), true);
+
+            listJobs.add(jobName);
+            AdminCommand.descriptionJobs.add(description);
+        } else {
+            source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана с описанием: " + description), true);
+            listJobs.add(jobName);
+            descriptionJobs.add(description);
+        }
         return 1;
     }
 }
