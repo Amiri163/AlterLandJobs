@@ -1,4 +1,4 @@
-package ru.alterlandjobs.common;
+package ru.alterlandjobs.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -6,10 +6,10 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
+import ru.alterlandjobs.jobs.BusDriverAdmin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class AdminCommand {
     public static List<String> listJobs = new ArrayList<>();
@@ -18,11 +18,10 @@ public class AdminCommand {
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
                 Commands.literal("jobs")
-
                         .then(Commands.literal("edit")
                                 .then(Commands.argument("jobName", StringArgumentType.string())
-                                        .then(Commands.argument("descriptionNEW", StringArgumentType.greedyString   ())
-                                                .executes(context -> editJobs(context, StringArgumentType.getString(context, "jobName"), StringArgumentType.getString(context, "descriptionNEW") ))
+                                        .then(Commands.argument("descriptionNEW", StringArgumentType.greedyString())
+                                                .executes(context -> editJobs(context, StringArgumentType.getString(context, "jobName"), StringArgumentType.getString(context, "descriptionNEW")))
                                         )
                                 )
                         )
@@ -36,7 +35,7 @@ public class AdminCommand {
                         )
 
                         .then(Commands.literal("create")
-                                .then(Commands.argument("jobName", StringArgumentType.string())
+                                .then(Commands.argument("jobName", StringArgumentType.greedyString())
                                         .then(Commands.argument("description", StringArgumentType.greedyString())
                                                 .executes(context -> createJobs(context, StringArgumentType.getString(context, "jobName"), StringArgumentType.getString(context, "description")))
                                         )
@@ -49,43 +48,58 @@ public class AdminCommand {
 
     private static int editJobs(CommandContext<CommandSource> context, String jobName, String descriptionNEW) {
         CommandSource source = context.getSource();
-        if (AdminCommand.listJobs.contains(jobName)) {
-            source.sendSuccess(new StringTextComponent("Изменение принято"), true);
-            descriptionJobs.set(0, descriptionNEW);
-        }
-        else{
-            source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
 
+        if (!BusDriverAdmin.redcatMod) {
+            if (AdminCommand.listJobs.contains(jobName)) {
+                source.sendSuccess(new StringTextComponent("Изменение принято"), true);
+                descriptionJobs.set(0, descriptionNEW);
+            } else {
+                source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
+            }
+        }
+        else {
+            source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
         }
         return 1;
     }
 
     private static int deleteJobs(CommandContext<CommandSource> context, String deleteJobs) {
         CommandSource source = context.getSource();
-        if (listJobs.contains(deleteJobs)) {
-            source.sendSuccess(new StringTextComponent(  "Работа "+ deleteJobs +  " удалена"), true);
-            int index = listJobs.indexOf(deleteJobs);
-            listJobs.remove(index);
-            descriptionJobs.remove(index);
+        if (!BusDriverAdmin.redcatMod) {
 
-        } else {
-            source.sendSuccess(new StringTextComponent("Такой работы нет, её нельзя удалить "), true);
+            if (listJobs.contains(deleteJobs)) {
+                source.sendSuccess(new StringTextComponent("Работа " + deleteJobs + " удалена"), true);
+                int index = listJobs.indexOf(deleteJobs);
+                listJobs.remove(index);
+                descriptionJobs.remove(index);
 
+            } else {
+                source.sendSuccess(new StringTextComponent("Такой работы нет, её нельзя удалить "), true);
+            }
+        }
+        else {
+            source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
         }
         return 1;
     }
 
     private static int createJobs(CommandContext<CommandSource> context, String jobName, String description) {
         CommandSource source = context.getSource();
-        if (description.contains("без описания")) {
-            source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана " + description), true);
 
-            listJobs.add(jobName);
-            AdminCommand.descriptionJobs.add(description);
-        } else {
-            source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана с описанием: " + description), true);
-            listJobs.add(jobName);
-            descriptionJobs.add(description);
+        if (!BusDriverAdmin.redcatMod) {
+            if (description.contains("без описания")) {
+                source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана " + description), true);
+
+                listJobs.add(jobName);
+                AdminCommand.descriptionJobs.add(description);
+            } else {
+                source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана с описанием: " + description), true);
+                listJobs.add(jobName);
+                descriptionJobs.add(description);
+            }
+        }
+        else {
+            source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
         }
         return 1;
     }

@@ -1,4 +1,4 @@
-package ru.alterlandjobs.common;
+package ru.alterlandjobs.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -34,13 +34,13 @@ public class PlayerCommand {
         CommandSource source = context.getSource();
 
         if (AdminCommand.listJobs.size() == AdminCommand.descriptionJobs.size() && !AdminCommand.listJobs.isEmpty()) {
-            StringBuilder message = new StringBuilder("Список всех работ:\n");
+            StringBuilder message = new StringBuilder("Список всех работ:\n\n");
 
             for (int i = 0; i < AdminCommand.listJobs.size(); i++) {
                 String jobName = AdminCommand.listJobs.get(i);
                 String jobDescription = AdminCommand.descriptionJobs.get(i);
                 if (!AdminCommand.descriptionJobs.contains("без описания")) {
-                    message.append(jobName).append(" - описание: ").append(jobDescription).append("\n");
+                    message.append(jobName).append(" - описание: ").append(jobDescription);
                 } else {
                     message.append(jobName).append(" - ").append(jobDescription).append("\n");
 
@@ -50,7 +50,7 @@ public class PlayerCommand {
 
             source.sendSuccess(new StringTextComponent(message.toString()), true);
         } else {
-            source.sendSuccess(new StringTextComponent("Список всех работ:\n"), true);
+            source.sendSuccess(new StringTextComponent("Список всех работ:  \n"), true);
             source.sendSuccess(new StringTextComponent("Здесь пока нет работ"), true);
 
         }
