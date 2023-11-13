@@ -6,17 +6,19 @@ import java.util.List;
 public class JobInfo {
     private int route = 0;
     private String routeName;
+    private int variable;
 
-    public JobInfo(String nameRout, int route) {
+    public JobInfo(int var, String nameRout, int route) {
         this.routeName = nameRout;
         this.route = route;
+        this.variable = var;
         toString();
     }
 
     @Override
     public String toString() {
-        int var = 1;
-        return var + ") "+  routeName + ". Количество остановок: " + route;
+
+        return variable + ") "+  routeName + ". Количество остановок: " + route;
     }
 
 }

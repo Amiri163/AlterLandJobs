@@ -35,7 +35,7 @@ public class AdminCommand {
                         )
 
                         .then(Commands.literal("create")
-                                .then(Commands.argument("jobName", StringArgumentType.greedyString())
+                                .then(Commands.argument("jobName", StringArgumentType.string())
                                         .then(Commands.argument("description", StringArgumentType.greedyString())
                                                 .executes(context -> createJobs(context, StringArgumentType.getString(context, "jobName"), StringArgumentType.getString(context, "description")))
                                         )
@@ -56,8 +56,7 @@ public class AdminCommand {
             } else {
                 source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
             }
-        }
-        else {
+        } else {
             source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
         }
         return 1;
@@ -76,8 +75,7 @@ public class AdminCommand {
             } else {
                 source.sendSuccess(new StringTextComponent("Такой работы нет, её нельзя удалить "), true);
             }
-        }
-        else {
+        } else {
             source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
         }
         return 1;
@@ -97,8 +95,7 @@ public class AdminCommand {
                 listJobs.add(jobName);
                 descriptionJobs.add(description);
             }
-        }
-        else {
+        } else {
             source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
         }
         return 1;

@@ -40,7 +40,7 @@ public class PlayerCommand {
                 String jobName = AdminCommand.listJobs.get(i);
                 String jobDescription = AdminCommand.descriptionJobs.get(i);
                 if (!AdminCommand.descriptionJobs.contains("без описания")) {
-                    message.append(jobName).append(" - описание: ").append(jobDescription);
+                    message.append(jobName).append(" - описание: ").append(jobDescription).append("\n");
                 } else {
                     message.append(jobName).append(" - ").append(jobDescription).append("\n");
 

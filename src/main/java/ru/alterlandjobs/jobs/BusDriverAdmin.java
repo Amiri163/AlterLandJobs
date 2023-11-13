@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
+import ru.alterlandjobs.commands.AdminCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,28 +24,20 @@ public class BusDriverAdmin {
                 Commands.literal("jobs")
                         .then(Commands.literal("route")
                                 .then(Commands.literal("add")
-                                        .then(Commands.argument("jobsName", StringArgumentType.greedyString())
+                                        .then(Commands.argument("jobsName", StringArgumentType.string())
                                                 .then(Commands.argument("routeName", StringArgumentType.greedyString())
-                                                                .executes(context -> addRout(context, StringArgumentType.getString(context, "jobsName"),
-                                                                        StringArgumentType.getString(context, "routeName")))
-
-                                                )))));
-
-        dispatcher.register(
-                Commands.literal("jobs")
-                        .then(Commands.literal("route")
+                                                        .executes(context -> addRout(context, (StringArgumentType.getString(context, "jobsName")),
+                                                                StringArgumentType.getString(context, "routeName"))))
+                                                ))
                                 .then(Commands.literal("remove")
                                         .then(Commands.argument("jobName", StringArgumentType.string())
-                                                .then(Commands.argument("routeName", StringArgumentType.string())
+                                                .then(Commands.argument("routeName", StringArgumentType.greedyString())
                                                         .executes(context -> removeRout(context, StringArgumentType.getString(context, "jobName"),
                                                                 StringArgumentType.getString(context, "routeName")))
-                                                )))));
-        dispatcher.register(
-                Commands.literal("jobs")
-                        .then(Commands.literal("route")
+                                                )))
                                 .then(Commands.literal("edit")
                                         .then(Commands.argument("jobName", StringArgumentType.string())
-                                                .then(Commands.argument("routeName", StringArgumentType.string())
+                                                .then(Commands.argument("routeName", StringArgumentType.greedyString())
                                                         .executes(context -> editModRouts(context, StringArgumentType.getString(context, "jobName"),
                                                                 StringArgumentType.getString(context, "routeName")))
                                                 )))));
@@ -65,12 +58,17 @@ public class BusDriverAdmin {
 
     private static int addRout(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
+        if (AdminCommand.listJobs.contains(jobName)) {
 
-        nameJobe.add(jobName);
-        routeJobe.add(routeName);
+            nameJobe.add(jobName);
+            routeJobe.add(routeName);
 
-        source.sendSuccess(new StringTextComponent("Новый маршрут создан"), true);
+            source.sendSuccess(new StringTextComponent("Новый маршрут создан"), true);
+        }
+        else{
+            source.sendSuccess(new StringTextComponent("Вы не можете создать маршрут для работы которой нет"), true);
 
+        }
         return 1;
     }
 
