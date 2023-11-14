@@ -1,7 +1,6 @@
 package ru.alterlandjobs.jobs;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
@@ -16,10 +15,11 @@ public class BusDriverPlayer {
                 Commands.literal("jobs")
                         .then(Commands.literal("route")
                                 .then(Commands.literal("list")
-                                        .executes(context -> routList(context)))));
+                                        .then(Commands.argument("jobName", StringArgumentType.string())
+                                                .executes(context -> routList(context, StringArgumentType.getString(context, "jobName")))))));
     }
-
-    private static int routList(CommandContext<CommandSource> context) {
+    // МАРШРУТЫ К РАБОТЕ КОТОРАЯ УКАЗНА В КОМАНДЕ
+    private static int routList(CommandContext<CommandSource> context, String jobName) {
         CommandSource source = context.getSource();
         if (!BusDriverAdmin.routeJobe.isEmpty()) {
             int var1 = 1;
@@ -33,4 +33,5 @@ public class BusDriverPlayer {
         }
         return 1;
     }
+
 }
