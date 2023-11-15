@@ -55,9 +55,10 @@ public class AdminCommand {
         if (AdminCommand.listJobs.contains(jobName)) {
             source.sendSuccess(new StringTextComponent("Изменение принято"), true);
             descriptionJobs.set(0, descriptionNEW);
-        } else {
-            source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
+            return 0;
         }
+        source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
+
         return 1;
     }
 

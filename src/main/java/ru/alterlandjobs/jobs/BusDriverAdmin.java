@@ -18,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 public class BusDriverAdmin {
-    public static List<String> routeJobe = new ArrayList();
-    public static Map<String, List<String>> routesByJob = new HashMap<>();
+    private static Map<String, Map<String, Boolean>> editModes = new HashMap<>(); // Хранение режима редактирования
 
+    public static Map<String, List<String>> routesByJob = new HashMap<>(); // хранит название работы + маршрут по ключу
+    public static List<String> routeJobs = new ArrayList<>();
     public static List<Integer> awards = new ArrayList();
     public static boolean redcatMod = false;
 
@@ -69,12 +70,16 @@ public class BusDriverAdmin {
                                                         .executes(context -> editModRouts(context, StringArgumentType.getString(context, "jobName"),
                                                                 StringArgumentType.getString(context, "routeName")))
                                                 )))
+                                .then(Commands.literal("edit")
+                                        .then(Commands.literal("leave")
+                                                .executes(BusDriverAdmin::leaveEditModRouts)
+                                        ))
 
-                                .then(Commands.literal("reward")
-                                        .then(Commands.argument("reward", IntegerArgumentType.integer())
-                                                .executes(context -> setReward(context, IntegerArgumentType.getInteger(context, "reward")
+                        .then(Commands.literal("reward")
+                                .then(Commands.argument("reward", IntegerArgumentType.integer())
+                                        .executes(context -> setReward(context, IntegerArgumentType.getInteger(context, "reward")
 
-                                                ))))));
+                                        ))))));
     }
 
     private static int addRout(CommandContext<CommandSource> context, String jobName, String routeName) {
@@ -83,9 +88,10 @@ public class BusDriverAdmin {
             source.sendFailure(new StringTextComponent("Вы не можете создать маршрут для работы, которой нет"));
             return 0;
         }
+
         routesByJob.putIfAbsent(jobName, new ArrayList<>());
         List<String> routesForJob = routesByJob.get(jobName);
-
+        routeJobs.add(routeName);
         routesForJob.add(routeName);
 
         source.sendSuccess(new StringTextComponent("Новый маршрут " + routeName + " создан для работы " + jobName), true);
@@ -128,14 +134,36 @@ public class BusDriverAdmin {
     // РЕДАКТИРОВАНИЯ К РАБОТЕ МАРШРУТА КОТОРАЯ УКАЗНА В КОМАНДЕ
     private static int editModRouts(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
-        if (!routeJobe.contains(routeName) || !AdminCommand.listJobs.contains(jobName)) {
+
+        if (!routesByJob.containsKey(jobName) || !routesByJob.get(jobName).contains(routeName)) {
             source.sendFailure(new StringTextComponent("Такой маршрут или работа не найдена"));
             return 0;
         }
+        editModes.putIfAbsent(jobName, new HashMap<>());
+        Map<String, Boolean> jobEditModes = editModes.get(jobName);
+
+        if (jobEditModes.containsKey(routeName) && jobEditModes.get(routeName)) {
+            source.sendFailure(new StringTextComponent("Редактирование для этого маршрута уже включено"));
+            return 0;
+        }
         redcatMod = true;
-        source.sendSuccess(new StringTextComponent("Режим редактирования для этого маршрута включен"), true);
+        jobEditModes.put(routeName, true);
+        source.sendSuccess(new StringTextComponent("Режим редактирования для маршрута " + routeName + " в работе " + jobName + " включен"), true);
         return 1;
     }
+
+    private static int leaveEditModRouts(CommandContext<CommandSource> context) {
+        CommandSource source = context.getSource();
+        if (redcatMod) {
+            source.sendSuccess(new StringTextComponent("Вы вышли с режима редактирования"), true);
+            redcatMod = false;
+            return 0;
+        }
+        source.sendFailure(new StringTextComponent("Вы не находитесь в режиме редактирования"));
+
+        return 1;
+    }
+
 
     // через проверку в массиве
     private static int setReward(CommandContext<CommandSource> context, int reward) {
@@ -143,7 +171,7 @@ public class BusDriverAdmin {
         if (!redcatMod) {
             source.sendFailure(new StringTextComponent("Вы должны быть в режими редактирования маршрута"));
             return 0;
-        } else if(reward < 0){
+        } else if (reward < 0) {
             source.sendFailure(new StringTextComponent("Сумма не может быть отрицательной"));
             return 0;
         }
@@ -157,20 +185,21 @@ public class BusDriverAdmin {
     // ДОЛЖНО УДАЛЯТЬСЯ ВМЕСТЕ С ТОЧКАМИ МАРШРУТА
     private static int removeRout(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
+
         if (redcatMod) {
             source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));
             return 0;
         }
-        if (routeJobe.contains(routeName) && AdminCommand.listJobs.contains(jobName)) {
-            routeJobe.remove(routeName);
-            source.sendSuccess(new StringTextComponent("Удалено"), true);
+
+        if (routeJobs.contains(routeName) && AdminCommand.listJobs.contains(jobName)) {
+
+            routesByJob.remove(jobName);
+
+            source.sendSuccess(new StringTextComponent("Маршрут и все его точки удалены"), true);
             return 1;
         } else {
             source.sendSuccess(new StringTextComponent("Нельзя удалить маршрут, потому что его не существует"), true);
         }
-
-
         return 1;
-
     }
 }
