@@ -6,7 +6,11 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
+import ru.alterlandjobs.commands.AdminCommand;
 import ru.alterlandjobs.common.JobInfo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BusDriverPlayer {
 
@@ -18,20 +22,25 @@ public class BusDriverPlayer {
                                         .then(Commands.argument("jobName", StringArgumentType.string())
                                                 .executes(context -> routList(context, StringArgumentType.getString(context, "jobName")))))));
     }
+
     // МАРШРУТЫ К РАБОТЕ КОТОРАЯ УКАЗНА В КОМАНДЕ
     private static int routList(CommandContext<CommandSource> context, String jobName) {
         CommandSource source = context.getSource();
-        if (!BusDriverAdmin.routeJobe.isEmpty()) {
+        List<String> routesForJob = BusDriverAdmin.routesByJob.getOrDefault(jobName, new ArrayList<>());
+        if (!routesForJob.isEmpty()) {
             int var1 = 1;
-            for (String element : BusDriverAdmin.routeJobe) {
+            source.sendSuccess(new StringTextComponent("Список маршрутов к работе " + jobName), true);
+
+            for (String element : routesForJob) {
                 JobInfo list = new JobInfo(var1, element, 0);
                 var1++;
                 source.sendSuccess(new StringTextComponent(list.toString()), true);
             }
         } else {
-            source.sendSuccess(new StringTextComponent("Список маршрутов пуст"), true);
+            source.sendSuccess(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст"), true);
         }
         return 1;
     }
+
 
 }

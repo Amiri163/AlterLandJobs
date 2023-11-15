@@ -15,16 +15,8 @@ public class PlayerCommand {
                 Commands.literal("jobs")
                         .then(Commands.literal("list")
                                 .executes(PlayerCommand::listJobs))
-
                         .then(Commands.literal("my")
                                 .executes(PlayerCommand::myJobs))
-
-                        .then(Commands.literal("join")
-                                .then(Commands.argument("joinJobs", StringArgumentType.string())
-                                        .executes(context -> joinJobs(context, StringArgumentType.getString(context, "joinJobs")))))
-
-                        .then(Commands.literal("leave")
-                                .executes(PlayerCommand::leaveJobs))
 
         );
     }
@@ -47,7 +39,6 @@ public class PlayerCommand {
                 }
 
             }
-
             source.sendSuccess(new StringTextComponent(message.toString()), true);
         } else {
             source.sendSuccess(new StringTextComponent("Список всех работ:  \n"), true);
@@ -60,36 +51,11 @@ public class PlayerCommand {
     private static int myJobs(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
         if (myJobs == null) {
-            source.sendSuccess(new StringTextComponent("Ты еще не устроился на работу"), true);
+            source.sendFailure(new StringTextComponent("Ты еще не устроился на работу"));
+            return 0;
         } else {
             source.sendSuccess(new StringTextComponent("Ты работаешь на " + myJobs), true);
         }
         return 1;
-    }
-
-    private static int joinJobs(CommandContext<CommandSource> context, String joinJobs) {
-        CommandSource source = context.getSource();
-        if (AdminCommand.listJobs.contains(joinJobs)) {
-
-            source.sendSuccess(new StringTextComponent("Ты устроился работать " + joinJobs), true);
-            PlayerCommand.myJobs = joinJobs;
-            return 1;
-        } else {
-            source.sendSuccess(new StringTextComponent("Похоже, что такой работы не существует"), true);
-
-        }
-        return 0;
-    }
-
-    private static int leaveJobs(CommandContext<CommandSource> context) {
-        CommandSource source = context.getSource();
-        if (myJobs != null) {
-            source.sendSuccess(new StringTextComponent("Ты уволился с работы " + myJobs), true);
-            myJobs = null;
-            return 1;
-        } else {
-            source.sendSuccess(new StringTextComponent("Чтобы уволиться с работы, ты должен где-то работать"), true);
-            return 1;
-        }
     }
 }

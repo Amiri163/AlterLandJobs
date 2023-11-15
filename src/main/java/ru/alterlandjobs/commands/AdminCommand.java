@@ -48,55 +48,53 @@ public class AdminCommand {
 
     private static int editJobs(CommandContext<CommandSource> context, String jobName, String descriptionNEW) {
         CommandSource source = context.getSource();
-
-        if (!BusDriverAdmin.redcatMod) {
-            if (AdminCommand.listJobs.contains(jobName)) {
-                source.sendSuccess(new StringTextComponent("Изменение принято"), true);
-                descriptionJobs.set(0, descriptionNEW);
-            } else {
-                source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
-            }
+        if (BusDriverAdmin.redcatMod) {
+            source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));
+            return 0;
+        }
+        if (AdminCommand.listJobs.contains(jobName)) {
+            source.sendSuccess(new StringTextComponent("Изменение принято"), true);
+            descriptionJobs.set(0, descriptionNEW);
         } else {
-            source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
+            source.sendSuccess(new StringTextComponent("Работа не найдена"), true);
         }
         return 1;
     }
 
     private static int deleteJobs(CommandContext<CommandSource> context, String deleteJobs) {
         CommandSource source = context.getSource();
-        if (!BusDriverAdmin.redcatMod) {
-
-            if (listJobs.contains(deleteJobs)) {
-                source.sendSuccess(new StringTextComponent("Работа " + deleteJobs + " удалена"), true);
-                int index = listJobs.indexOf(deleteJobs);
-                listJobs.remove(index);
-                descriptionJobs.remove(index);
-
-            } else {
-                source.sendSuccess(new StringTextComponent("Такой работы нет, её нельзя удалить "), true);
-            }
-        } else {
-            source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
+        if (BusDriverAdmin.redcatMod) {
+            source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));
         }
+        if (!listJobs.contains(deleteJobs)) {
+            source.sendFailure(new StringTextComponent("Такой работы нет, её нельзя удалить"));
+            return 0;
+        }
+        source.sendSuccess(new StringTextComponent("Работа " + deleteJobs + " удалена"), true);
+        int index = listJobs.indexOf(deleteJobs);
+        listJobs.remove(index);
+        descriptionJobs.remove(index);
+
         return 1;
     }
 
     private static int createJobs(CommandContext<CommandSource> context, String jobName, String description) {
         CommandSource source = context.getSource();
 
-        if (!BusDriverAdmin.redcatMod) {
-            if (description.contains("без описания")) {
-                source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана " + description), true);
+        if (BusDriverAdmin.redcatMod) {
+            source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));
+            return 0;
+        }
+        if (description.contains("без описания")) {
 
-                listJobs.add(jobName);
-                AdminCommand.descriptionJobs.add(description);
-            } else {
-                source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана с описанием: " + description), true);
-                listJobs.add(jobName);
-                descriptionJobs.add(description);
-            }
+            source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана " + description), true);
+            listJobs.add(jobName);
+            AdminCommand.descriptionJobs.add(description);
         } else {
-            source.sendSuccess(new StringTextComponent("Включен режим редактирования маршрута"), true);
+
+            source.sendSuccess(new StringTextComponent("Работа " + jobName + " создана с описанием: " + description), true);
+            listJobs.add(jobName);
+            descriptionJobs.add(description);
         }
         return 1;
     }

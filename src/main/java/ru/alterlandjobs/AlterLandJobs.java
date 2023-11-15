@@ -6,8 +6,11 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import ru.alterlandjobs.commands.AdminCommand;
 import ru.alterlandjobs.commands.PlayerCommand;
+import ru.alterlandjobs.jobs.Base;
 import ru.alterlandjobs.jobs.BusDriverAdmin;
 import ru.alterlandjobs.jobs.BusDriverPlayer;
+
+import java.time.LocalTime;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("alterland_jobs")
@@ -18,7 +21,7 @@ public class AlterLandJobs {
 
     public AlterLandJobs() {
         IEventBus modEventBus = MinecraftForge.EVENT_BUS;
-
+        LocalTime currentTime = LocalTime.now();
         modEventBus.addListener(this::registerCommands);
     }
     private void registerCommands(RegisterCommandsEvent event) {
@@ -26,5 +29,6 @@ public class AlterLandJobs {
         AdminCommand.register(event.getDispatcher());
         BusDriverAdmin.register(event.getDispatcher());
         BusDriverPlayer.register(event.getDispatcher());
+        Base.register(event.getDispatcher());
     }
 }
