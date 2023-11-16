@@ -13,13 +13,11 @@ public class JobInfo {
         this.routeName = nameRout;
         this.route = route;
         this.variable = var;
-
         toString();
     }
 
     @Override
     public String toString() {
-
         return variable + ") "+  routeName + ". Количество остановок: " + route + "\n";
     }
 
