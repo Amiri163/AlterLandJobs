@@ -22,13 +22,13 @@ import java.util.Map;
 public class BusDriverAdmin {
     private static Map<String, EditModeInfo> editModes = new HashMap<>(); // Хранение информации о режиме редактирования
     public static Map<String, List<String>> routePoints = new HashMap<>(); // Хранит массив с точками
-    static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
-    static List<String> routesForJob = new ArrayList<>(); // хранение маршрутов для значения из массива
     public static Map<String, List<String>> routesByJob = new HashMap<>(); // Хранит название работы + маршрут по ключу
-    public static List<String> routeJobs = new ArrayList<>();
-    public static List<Integer> awards = new ArrayList();
-    public static boolean redcatMod = false;
 
+    public static List<Integer> awards = new ArrayList(); // Награда когда игрок на точке
+    static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
+    static List<String> routeJob = new ArrayList<>(); // хранение маршрутов для значения из массива
+
+    public static boolean redcatMod = false;
     private static int indexSt;
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
@@ -98,9 +98,8 @@ public class BusDriverAdmin {
         }
 
         routesByJob.putIfAbsent(jobName, new ArrayList<>());
-        routesForJob = routesByJob.get(jobName);
-        routeJobs.add(routeName);
-        routesForJob.add(routeName);
+        routeJob = routesByJob.get(jobName);
+        routeJob.add(routeName);
 
         source.sendSuccess(new StringTextComponent("Новый маршрут " + routeName + " создан для работы " + jobName), true);
         return 1;
@@ -237,14 +236,24 @@ public class BusDriverAdmin {
             source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));
             return 0;
         }
-        if (routesByJob.containsKey(jobName)) {
-            routeJobs.remove(routeName);
-            routesForJob.remove(routeName);
 
-            source.sendSuccess(new StringTextComponent("Маршрут и все его точки удалены"), true);
-            return 1;
+        if (routesByJob.containsKey(jobName)) {
+            List<String> routesForJob = routesByJob.get(jobName);
+            if (routesForJob.contains(routeName)) {
+                routesForJob.remove(routeName);
+                routePoints.remove(routeName); // Удаление точек, связанных с этим маршрутом
+                // Проверяем, остались ли еще маршруты для этой работы
+                if (routesForJob.isEmpty()) {
+                    routesByJob.remove(jobName); // Если маршрутов больше нет, удаляем работу
+                }
+                source.sendSuccess(new StringTextComponent("Маршрут и все его точки удалены"), true);
+                return 1;
+            } else {
+                source.sendFailure(new StringTextComponent("Маршрут не существует для указанной работы"));
+                return 0;
+            }
         } else {
-            source.sendFailure(new StringTextComponent("Маршрут не существует для указанной работы"));
+            source.sendFailure(new StringTextComponent("Указанная работа не найдена"));
             return 0;
         }
     }
