@@ -8,6 +8,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
@@ -25,6 +27,7 @@ public class BusDriverAdmin {
     private static Map<String, EditModeInfo> editModes = new HashMap<>(); // Хранение информации о режиме редактирования
     public static Map<String, List<String>> routePoints = new HashMap<>(); // Хранит массив с точками
     public static Map<String, List<String>> routesByJob = new HashMap<>(); // Хранит название работы + маршрут по ключу
+    public static Map<String, List<ItemStack>> routeItemMap = new HashMap<>(); // Хранит предметы для каждого маршрута
 
     public static List<Integer> awards = new ArrayList(); // Награда когда игрок на точке
     static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
@@ -204,9 +207,22 @@ public class BusDriverAdmin {
 
     // ИТЕМ ВЫДАЕТСЯ ДЛЯ МАРШРУТА ДЛЯ НУЖНОЙ РАБОТЫ
     private static int addItem(CommandContext<CommandSource> context) {
+        CommandSource source = context.getSource();
+        if (!redcatMod){
+            source.sendFailure(new StringTextComponent("Вы должны быть в режими редактирования маршрута"));
+            return 0;
+        }
         PlayerEntity player = Minecraft.getInstance().player;
-        String itemName = String.valueOf(player.getItemInHand(Hand.MAIN_HAND));
-        context.getSource().sendSuccess(new StringTextComponent(itemName), true);
+        ItemStack itemName = player.getItemInHand(Hand.MAIN_HAND);
+        String currentRoute = EditModeInfo.getRouteName();
+        Item item = itemName.getItem();
+
+        List<ItemStack> itemsForRoute = routeItemMap.getOrDefault(currentRoute, new ArrayList<>());
+        itemsForRoute.add(itemName);
+
+        routeItemMap.put(currentRoute, itemsForRoute);
+
+        System.out.println(item);
         return 1;
     }
 
