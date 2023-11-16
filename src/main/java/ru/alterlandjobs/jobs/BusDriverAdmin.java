@@ -23,7 +23,7 @@ public class BusDriverAdmin {
     private static Map<String, EditModeInfo> editModes = new HashMap<>(); // Хранение информации о режиме редактирования
     public static Map<String, List<String>> routePoints = new HashMap<>(); // Хранит массив с точками
     static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
-
+    static List<String> routesForJob = new ArrayList<>(); // хранение маршрутов для значения из массива
     public static Map<String, List<String>> routesByJob = new HashMap<>(); // Хранит название работы + маршрут по ключу
     public static List<String> routeJobs = new ArrayList<>();
     public static List<Integer> awards = new ArrayList();
@@ -49,7 +49,6 @@ public class BusDriverAdmin {
                                                 }
                                         )
                                 )
-
                                 .then(Commands.literal("remove")
                                         .then(Commands.argument("indexPoint", IntegerArgumentType.integer())
                                                 .executes(context -> deletePiont(context, IntegerArgumentType.getInteger(context, "indexPoint"))
@@ -99,16 +98,17 @@ public class BusDriverAdmin {
         }
 
         routesByJob.putIfAbsent(jobName, new ArrayList<>());
-        List<String> routesForJob = routesByJob.get(jobName);
+        routesForJob = routesByJob.get(jobName);
         routeJobs.add(routeName);
         routesForJob.add(routeName);
 
         source.sendSuccess(new StringTextComponent("Новый маршрут " + routeName + " создан для работы " + jobName), true);
         return 1;
     }
-    private static int pointsShow(CommandContext<CommandSource> context ) {
+
+    private static int pointsShow(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
-        if(!redcatMod){
+        if (!redcatMod) {
             source.sendFailure(new StringTextComponent("Вы должны находиться в режими редактирования маршрута "));
             return 0;
         }
@@ -149,6 +149,7 @@ public class BusDriverAdmin {
         source.sendSuccess(new StringTextComponent("Точка добавлена для маршрута " + currentRoute), true);
         return 1;
     }
+
     private static void addPoint(String routeName, String point) {
         if (routePoints.containsKey(routeName)) {
             // Получаем список точек для указанного маршрута и добавляем в него новую точку
@@ -232,21 +233,19 @@ public class BusDriverAdmin {
     // ДОЛЖНО УДАЛЯТЬСЯ ВМЕСТЕ С ТОЧКАМИ МАРШРУТА
     private static int removeRout(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
-
         if (redcatMod) {
             source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));
             return 0;
         }
-
-        if (routeJobs.contains(routeName) && AdminCommand.listJobs.contains(jobName)) {
-
-            routesByJob.remove(jobName);
+        if (routesByJob.containsKey(jobName)) {
+            routeJobs.remove(routeName);
+            routesForJob.remove(routeName);
 
             source.sendSuccess(new StringTextComponent("Маршрут и все его точки удалены"), true);
             return 1;
         } else {
-            source.sendSuccess(new StringTextComponent("Нельзя удалить маршрут, потому что его не существует"), true);
+            source.sendFailure(new StringTextComponent("Маршрут не существует для указанной работы"));
+            return 0;
         }
-        return 1;
     }
 }

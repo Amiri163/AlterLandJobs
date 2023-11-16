@@ -28,7 +28,7 @@ public class BusDriverPlayer {
         CommandSource source = context.getSource();
         List<String> routesForJob = BusDriverAdmin.routesByJob.getOrDefault(jobName, new ArrayList<>());
 
-        if (!routesForJob.isEmpty()) {
+        if (!BusDriverAdmin.routeJobs.isEmpty()) {
             int var1 = 1;
             source.sendSuccess(new StringTextComponent("Список маршрутов к работе " + jobName), true);
 
