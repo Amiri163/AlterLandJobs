@@ -13,17 +13,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BusDriverPlayer {
+    public static boolean playerWork = true;
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
                 Commands.literal("jobs")
                         .then(Commands.literal("route")
-                                .then(Commands.literal("list")
-                                        .then(Commands.argument("jobName", StringArgumentType.string())
-                                                .executes(context -> routList(context, StringArgumentType.getString(context, "jobName")))))));
+
+                                .then(Commands.literal("leave")
+                                        .executes(BusDriverPlayer::leaveJobs))
+
+                                        .then(Commands.literal("join")
+                                                .then(Commands.argument("jobName", StringArgumentType.string())
+                                                        .then(Commands.argument("routeName", StringArgumentType.string())
+                                                                .executes(context -> joinJobsAndRoute(context, StringArgumentType.getString(context, "jobName"),
+                                                                        StringArgumentType.getString(context, "routeName"))))))
+
+                                                .then(Commands.literal("list")
+                                                        .then(Commands.argument("jobName", StringArgumentType.string())
+                                                                .executes(context -> routList(context, StringArgumentType.getString(context, "jobName")))))));
     }
 
-    // МАРШРУТЫ К РАБОТЕ КОТОРАЯ УКАЗНА В КОМАНДЕ
     private static int routList(CommandContext<CommandSource> context, String jobName) {
         CommandSource source = context.getSource();
         List<String> routesForJob = BusDriverAdmin.routesByJob.getOrDefault(jobName, new ArrayList<>());
@@ -44,6 +54,38 @@ public class BusDriverPlayer {
             source.sendFailure(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст или такой работы нет"));
             return 0;
         }
+        return 1;
+    }
+
+    private static int joinJobsAndRoute(CommandContext<CommandSource> context, String jobName, String routeName) {
+        CommandSource source = context.getSource();
+
+        if (AdminCommand.listJobs.contains(jobName) && BusDriverAdmin.routesByJob.containsKey(jobName)) {
+
+            if (!playerWork) {
+                source.sendFailure(new StringTextComponent("Чтобы присоединиться на новый маршрут - уволетесь со старого"));
+                return 0;
+            }
+            playerWork = false;
+            source.sendSuccess(new StringTextComponent("Вы успешно присоединились к маршруту " + routeName), true);
+            return 1;
+        }
+        else {
+            source.sendFailure(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст или такой работы нет"));
+            return 0;
+        }
+    }
+
+    private static int leaveJobs(CommandContext<CommandSource> context) {
+        CommandSource source = context.getSource();
+        if (playerWork) {
+            source.sendFailure(new StringTextComponent("Вы еще не присоеденились ни к одному маршруту"));
+            return 0;
+        }
+
+        playerWork = true;
+        source.sendSuccess(new StringTextComponent("Вы уволились с маршрута"), true);
+
         return 1;
     }
 

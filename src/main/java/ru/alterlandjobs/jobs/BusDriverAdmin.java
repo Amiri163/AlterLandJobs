@@ -13,7 +13,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import ru.alterlandjobs.commands.AdminCommand;
 import ru.alterlandjobs.common.EditModeInfo;
+import ru.alterlandjobs.common.PointsInfo;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +45,7 @@ public class BusDriverAdmin {
                                         .then(Commands.argument("index", IntegerArgumentType.integer())
                                                 .executes(context -> setPoint(context, IntegerArgumentType.getInteger(context, "index")))
                                         )
-                                        .executes(context -> {
-                                                    indexSt++;
-                                                    return setPoint(context, indexSt);
-                                                }
+                                        .executes(context -> setPoint(context, indexSt)
                                         )
                                 )
                                 .then(Commands.literal("remove")
@@ -114,7 +113,10 @@ public class BusDriverAdmin {
         if (routePoints.containsKey(EditModeInfo.getRouteName())) {
             List<String> points = routePoints.get(EditModeInfo.getRouteName());
             if (!points.isEmpty()) {
-                source.sendSuccess(new StringTextComponent("Точки для маршрута " + EditModeInfo.getRouteName() + ": " + points), true);
+                for (String element : points) {
+                    indexSt++;
+                    source.sendSuccess(new StringTextComponent(new PointsInfo(indexSt, element).toString()), true);
+                }
             } else {
                 source.sendFailure(new StringTextComponent("Для маршрута " + EditModeInfo.getRouteName() + " точки не найдены"));
                 return 0;
@@ -129,6 +131,7 @@ public class BusDriverAdmin {
 
     // УСТАНАВЛИВАЕТ ТОЧКУ НА КАРТЕ ИНДЕКС АВТОМАТИЧЕСК
     private static int setPoint(CommandContext<CommandSource> context, int index) {
+        indexSt = index;
         CommandSource source = context.getSource();
         if (!redcatMod) {
             source.sendFailure(new StringTextComponent("Вы должны находиться в режими редактирования маршрута "));
@@ -164,9 +167,39 @@ public class BusDriverAdmin {
 
     private static int deletePiont(CommandContext<CommandSource> context, int index) {
         CommandSource source = context.getSource();
-        //  source.sendSuccess(new StringTextComponent(String.valueOf(index)), true);
+        if (!redcatMod) {
+            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута"));
+            return 0;
+        }
 
+        String currentRoute = EditModeInfo.getRouteName();
+        if (!routePoints.containsKey(currentRoute)) {
+            source.sendFailure(new StringTextComponent("Маршрут не найден"));
+            return 0;
+        }
+
+        List<String> points = routePoints.get(currentRoute);
+        int listSize = points.size();
+        if (index >= listSize || index < 0) {
+            source.sendFailure(new StringTextComponent("Указан недопустимый индекс точки"));
+            return 0;
+        }
+
+        // Удаление точки по индексу
+        points.remove(index);
+
+        // Уменьшение индексов оставшихся точек
+        for (int i = index; i < listSize - 1; i++) {
+            String modifiedPoint = points.get(i);
+            String[] coordinates = modifiedPoint.split(" ");
+            int currentPointIndex = Integer.parseInt(coordinates[0]) - 1;
+            coordinates[0] = String.valueOf(currentPointIndex);
+            points.set(i, String.join(" ", coordinates));
+        }
+
+        source.sendSuccess(new StringTextComponent("Точка с индексом " + index + " удалена"), true);
         return 1;
+
     }
 
     // ИТЕМ ВЫДАЕТСЯ ДЛЯ МАРШРУТА ДЛЯ НУЖНОЙ РАБОТЫ
