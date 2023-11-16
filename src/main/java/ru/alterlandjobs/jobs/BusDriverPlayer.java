@@ -27,17 +27,22 @@ public class BusDriverPlayer {
     private static int routList(CommandContext<CommandSource> context, String jobName) {
         CommandSource source = context.getSource();
         List<String> routesForJob = BusDriverAdmin.routesByJob.getOrDefault(jobName, new ArrayList<>());
+
         if (!routesForJob.isEmpty()) {
             int var1 = 1;
             source.sendSuccess(new StringTextComponent("Список маршрутов к работе " + jobName), true);
 
             for (String element : routesForJob) {
-                JobInfo list = new JobInfo(var1, element, 0);
+                List<String> pointsForRoute = BusDriverAdmin.routePoints.getOrDefault(element, new ArrayList<>());
+                int pointsCount = pointsForRoute.size();
+
+                JobInfo list = new JobInfo(var1, element, pointsCount);
                 var1++;
                 source.sendSuccess(new StringTextComponent(list.toString()), true);
             }
         } else {
-            source.sendSuccess(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст"), true);
+            source.sendFailure(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст или такой работы нет"));
+            return 0;
         }
         return 1;
     }

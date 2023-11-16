@@ -21,7 +21,8 @@ import java.util.Map;
 
 public class BusDriverAdmin {
     private static Map<String, EditModeInfo> editModes = new HashMap<>(); // Хранение информации о режиме редактирования
-    private static Map<String, List<String>> routePoints = new HashMap<>(); // Хранит массив с точками
+    public static Map<String, List<String>> routePoints = new HashMap<>(); // Хранит массив с точками
+    static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
 
     public static Map<String, List<String>> routesByJob = new HashMap<>(); // Хранит название работы + маршрут по ключу
     public static List<String> routeJobs = new ArrayList<>();
@@ -151,7 +152,7 @@ public class BusDriverAdmin {
     private static void addPoint(String routeName, String point) {
         if (routePoints.containsKey(routeName)) {
             // Получаем список точек для указанного маршрута и добавляем в него новую точку
-            List<String> points = routePoints.get(routeName);
+            points = routePoints.get(routeName);
             points.add(point);
         } else {
             // Если маршрута еще не существует, создаем новый список точек для этого маршрута
