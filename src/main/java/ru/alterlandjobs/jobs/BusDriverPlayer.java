@@ -14,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
 import ru.alterlandjobs.commands.AdminCommand;
+import ru.alterlandjobs.common.EditModeInfo;
 import ru.alterlandjobs.common.JobInfo;
 
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class BusDriverPlayer {
                 var1++;
                 source.sendSuccess(new StringTextComponent(list.toString()), true);
             }
+
         } else {
             source.sendFailure(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст или такой работы нет"));
             return 0;
@@ -92,7 +94,7 @@ public class BusDriverPlayer {
             }
             PlayerEntity player = Minecraft.getInstance().player;
 
-            for (ResourceLocation item : itemsForRoute) {
+            for (ResourceLocation item : routeItemMap.get(routeName)) {
                 ItemStack itemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(item));
                 player.addItem(itemStack);
             }
