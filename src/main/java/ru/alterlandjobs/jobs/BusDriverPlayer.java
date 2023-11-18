@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static ru.alterlandjobs.jobs.BusDriverAdmin.routeItemMap;
+import static ru.alterlandjobs.commands.AdminCommand.listJobs;
+import static ru.alterlandjobs.jobs.BusDriverAdmin.*;
 
 public class BusDriverPlayer {
     public static boolean playerWork = true;
@@ -46,9 +47,9 @@ public class BusDriverPlayer {
 
     private static int routList(CommandContext<CommandSource> context, String jobName) {
         CommandSource source = context.getSource();
-        List<String> routesForJob = BusDriverAdmin.routesByJob.getOrDefault(jobName, new ArrayList<>());
+        List<String> routesForJob = routesByJob.getOrDefault(jobName, new ArrayList<>());
 
-        if (AdminCommand.listJobs.contains(jobName) && BusDriverAdmin.routesByJob.containsKey(jobName)) {
+        if (listJobs.contains(jobName) && routesByJob.containsKey(jobName)) {
             int var1 = 1;
             source.sendSuccess(new StringTextComponent("Список маршрутов к работе " + jobName), true);
 
@@ -69,31 +70,39 @@ public class BusDriverPlayer {
 
     private static int joinJobsAndRoute(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
-        if (BusDriverAdmin.redcatMod){
-            source.sendFailure(new StringTextComponent("Вы находитесь в режими редактирования"));
-            return 0;
-        }
-        if (AdminCommand.listJobs.contains(jobName) && BusDriverAdmin.routesByJob.containsKey(jobName)) {
-            if (!playerWork) {
-
-                source.sendFailure(new StringTextComponent("Чтобы присоединиться на новый маршрут - уволетесь со старого"));
+        if (routesByJob.containsKey(jobName)) {
+            if (BusDriverAdmin.redcatMod) {
+                source.sendFailure(new StringTextComponent("Вы находитесь в режими редактирования"));
                 return 0;
             }
+
+            if (!listJobs.contains(jobName) || !routesByJob.containsKey(jobName)) {
+                source.sendFailure(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст или такой работы нет"));
+                return 0;
+            }
+
+            if (!playerWork) {
+                source.sendFailure(new StringTextComponent("Чтобы присоединиться к новому маршруту - уволитесь со старого"));
+                return 0;
+            }
+            if (!routeItemMap.containsKey(routeName)) {
+                playerWork = false;
+                source.sendSuccess(new StringTextComponent("Вы успешно присоединились к маршруту " + routeName), true);
+                return 1;
+            }
             PlayerEntity player = Minecraft.getInstance().player;
-            playerWork = false;
 
-            for (ResourceLocation item : BusDriverAdmin.itemsForRoute) {
+            for (ResourceLocation item : itemsForRoute) {
                 ItemStack itemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(item));
-
-                System.out.println(item);
                 player.addItem(itemStack);
             }
+            playerWork = false;
             source.sendSuccess(new StringTextComponent("Вы успешно присоединились к маршруту " + routeName), true);
             return 1;
-        } else {
-            source.sendFailure(new StringTextComponent("Список маршрутов для работы " + jobName + " пуст или такой работы нет"));
-            return 0;
         }
+
+        source.sendFailure(new StringTextComponent("Маршрут " + routeName + " для работы " + jobName + " не найден"));
+        return 0;
     }
 
     private static int leaveJobs(CommandContext<CommandSource> context) {

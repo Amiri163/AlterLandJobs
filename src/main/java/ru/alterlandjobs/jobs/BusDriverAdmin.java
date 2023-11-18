@@ -207,7 +207,6 @@ public class BusDriverAdmin {
 
     }
 
-    // ИТЕМ ВЫДАЕТСЯ ДЛЯ МАРШРУТА ДЛЯ НУЖНОЙ РАБОТЫ
     private static int addItem(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
         if (!redcatMod){
@@ -230,7 +229,6 @@ public class BusDriverAdmin {
         return 1;
     }
 
-    // РЕДАКТИРОВАНИЯ К РАБОТЕ МАРШРУТА КОТОРАЯ УКАЗНА В КОМАНДЕ
     private static int editModRouts(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
 
@@ -281,9 +279,7 @@ public class BusDriverAdmin {
         return 1;
     }
 
-
-    // ДОЛЖНО УДАЛЯТЬСЯ ВМЕСТЕ С ТОЧКАМИ МАРШРУТА
-    private static int removeRout(CommandContext<CommandSource> context, String jobName, String routeName) {
+        private static int removeRout(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
         if (redcatMod) {
             source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));
