@@ -18,6 +18,7 @@ import ru.alterlandjobs.common.JobInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static ru.alterlandjobs.jobs.BusDriverAdmin.routeItemMap;
 
@@ -68,24 +69,25 @@ public class BusDriverPlayer {
 
     private static int joinJobsAndRoute(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
+        if (BusDriverAdmin.redcatMod){
+            source.sendFailure(new StringTextComponent("Вы находитесь в режими редактирования"));
+            return 0;
+        }
         if (AdminCommand.listJobs.contains(jobName) && BusDriverAdmin.routesByJob.containsKey(jobName)) {
             if (!playerWork) {
+
                 source.sendFailure(new StringTextComponent("Чтобы присоединиться на новый маршрут - уволетесь со старого"));
                 return 0;
             }
             PlayerEntity player = Minecraft.getInstance().player;
             playerWork = false;
 
-             List<ItemStack> items = new ArrayList();
-            items.add(new ItemStack(Items.DIAMOND_BLOCK));
+            for (ResourceLocation item : BusDriverAdmin.itemsForRoute) {
+                ItemStack itemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(item));
 
-
-//            String itemName = "grass_block"; // Название предмета
-//            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", itemName));
-
-
-            player.addItem(items.get(0));
-
+                System.out.println(item);
+                player.addItem(itemStack);
+            }
             source.sendSuccess(new StringTextComponent("Вы успешно присоединились к маршруту " + routeName), true);
             return 1;
         } else {

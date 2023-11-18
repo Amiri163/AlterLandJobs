@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import ru.alterlandjobs.commands.AdminCommand;
@@ -27,8 +28,9 @@ public class BusDriverAdmin {
     private static Map<String, EditModeInfo> editModes = new HashMap<>(); // Хранение информации о режиме редактирования
     public static Map<String, List<String>> routePoints = new HashMap<>(); // Хранит массив с точками
     public static Map<String, List<String>> routesByJob = new HashMap<>(); // Хранит название работы + маршрут по ключу
-    public static Map<String, List<ItemStack>> routeItemMap = new HashMap<>(); // Хранит предметы для каждого маршрута
+    public static Map<String, List<ResourceLocation>> routeItemMap = new HashMap<>(); // Хранит предметы для каждого маршрута
 
+    public static List<ResourceLocation> itemsForRoute = new ArrayList<>(); // предмет от маршрута
     public static List<Integer> awards = new ArrayList(); // Награда когда игрок на точке
     static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
     static List<String> routeJob = new ArrayList<>(); // хранение маршрутов для значения из массива
@@ -213,16 +215,18 @@ public class BusDriverAdmin {
             return 0;
         }
         PlayerEntity player = Minecraft.getInstance().player;
-        ItemStack itemName = player.getItemInHand(Hand.MAIN_HAND);
-        String currentRoute = EditModeInfo.getRouteName();
-        Item item = itemName.getItem();
+        ItemStack itemNameStack = player.getItemInHand(Hand.MAIN_HAND);
 
-        List<ItemStack> itemsForRoute = routeItemMap.getOrDefault(currentRoute, new ArrayList<>());
-        itemsForRoute.add(itemName);
+        Item item = itemNameStack.getItem();
+        ResourceLocation itemNameLocation = item.getRegistryName();
 
-        routeItemMap.put(currentRoute, itemsForRoute);
+        itemsForRoute = routeItemMap.getOrDefault(EditModeInfo.getRouteName(), new ArrayList<>());
+        itemsForRoute.add(itemNameLocation);
 
-        System.out.println(item);
+        routeItemMap.put(EditModeInfo.getRouteName(), itemsForRoute);
+        source.sendSuccess(new StringTextComponent("Добавлены предмет: " + itemsForRoute ), true);
+
+        System.out.println(itemNameLocation);
         return 1;
     }
 
