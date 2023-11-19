@@ -12,22 +12,15 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 import ru.alterlandjobs.commands.AdminCommand;
 import ru.alterlandjobs.common.EditModeInfo;
-import ru.alterlandjobs.common.PointsInfo;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BusDriverAdmin {
     private static Map<String, EditModeInfo> editModes = new HashMap<>(); // Хранение информации о режиме редактирования
     public static Map<String, List<String>> routePoints = new HashMap<>(); // Хранит массив с точками
-    public static Map<String, List<String>> showPoints = new HashMap<>(); // Хранит массив с точками для show, порядок точки : корды
     public static Map<String, List<String>> routesByJob = new HashMap<>(); // Хранит название работы + маршрут по ключу
     public static Map<String, List<ResourceLocation>> routeItemMap = new HashMap<>(); // Хранит предметы для каждого маршрута
 
@@ -38,6 +31,9 @@ public class BusDriverAdmin {
 
     public static boolean redcatMod = false;
     private static int indexSt;
+
+    // не нужно сохранять
+    public static List<String> pointsOnly = new ArrayList<>();
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
@@ -51,7 +47,7 @@ public class BusDriverAdmin {
                                         .then(Commands.argument("index", IntegerArgumentType.integer())
                                                 .executes(context -> setPoint(context, IntegerArgumentType.getInteger(context, "index")))
                                         )
-                                        .executes(context -> setPoint(context, indexSt)
+                                        .executes(context -> setPoint(context, 0)
                                         )
                                 )
                                 .then(Commands.literal("remove")
@@ -112,22 +108,38 @@ public class BusDriverAdmin {
 
     private static int pointsShow(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
-        if (!redcatMod) {
-            source.sendFailure(new StringTextComponent("Вы должны находиться в режими редактирования маршрута "));
-            return 0;
-        }
+        // Проверяем наличие маршрута в routePoints
+        //        if (!redcatMod) {
+//            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута "));
+//            return 0;
+//        }
         if (routePoints.containsKey(EditModeInfo.getRouteName())) {
-            List<String> points = routePoints.get(EditModeInfo.getRouteName());
-            if (!points.isEmpty()) {
-                for (String element : points) {
-                    source.sendSuccess(new StringTextComponent(new PointsInfo(indexSt, element).toString()), true);
+            pointsOnly = routePoints.get(EditModeInfo.getRouteName());
+
+            if (!pointsOnly.isEmpty()) {
+                Map<Integer, List<String>> pointsAndIndex = new HashMap<>(); // хранит индекс для точки в show
+
+                for (int i = 0; i < pointsOnly.size(); i++)
+                    pointsAndIndex.put(i + 1, Collections.singletonList(pointsOnly.get(i)));
+
+                for (Map.Entry<Integer, List<String>> entry : pointsAndIndex.entrySet()) {
+                    Integer key = entry.getKey();
+                    List<String> value = entry.getValue();
+
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(key).append(") ");
+                    for (String str : value) {
+                        stringBuilder.append(str).append(" ");
+                    }
+
+                    source.sendSuccess(new StringTextComponent(stringBuilder.toString()), true);
                 }
             } else {
                 source.sendFailure(new StringTextComponent("Для маршрута " + EditModeInfo.getRouteName() + " точки не найдены"));
                 return 0;
             }
         } else {
-            source.sendFailure(new StringTextComponent("Маршрут " + EditModeInfo.getRouteName() + " не cодержит точек"));
+            source.sendFailure(new StringTextComponent("Маршрут " + EditModeInfo.getRouteName() + " не содержит точек"));
             return 0;
         }
 
@@ -136,46 +148,41 @@ public class BusDriverAdmin {
 
     // УСТАНАВЛИВАЕТ ТОЧКУ НА КАРТЕ ИНДЕКС АВТОМАТИЧЕСК
     private static int setPoint(CommandContext<CommandSource> context, int index) {
-
+        indexSt = index;
         CommandSource source = context.getSource();
-        if (!redcatMod) {
-            source.sendFailure(new StringTextComponent("Вы должны находиться в режими редактирования маршрута "));
-            return 0;
-        }
-
+//        if (!redcatMod) {
+//            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута "));
+//            return 0;
+//        }
         PlayerEntity player = Minecraft.getInstance().player;
+
         long playerX = Math.round(player.getX());
         long playerY = Math.round(player.getY());
         long playerZ = Math.round(player.getZ());
+        String mess = playerX + " " + playerY + " " + playerZ;
 
-        String currentRoute = EditModeInfo.getRouteName();
-
-        // Добавляем точку к текущему маршруту
-        addPoint(currentRoute, playerX + " " + playerY + " " + playerZ);
-        indexSt++;
-        source.sendSuccess(new StringTextComponent("Точка добавлена для маршрута " + currentRoute), true);
-        return 1;
-    }
-
-    private static void addPoint(String routeName, String point) {
-        if (routePoints.containsKey(routeName)) {
+        if (routePoints.containsKey(EditModeInfo.getRouteName())) {
             // Получаем список точек для указанного маршрута и добавляем в него новую точку
-            points = routePoints.get(routeName);
-            points.add(point);
+            points = routePoints.get(EditModeInfo.getRouteName());
+            points.add(mess);
         } else {
             // Если маршрута еще не существует, создаем новый список точек для этого маршрута
             List<String> points = new ArrayList<>();
-            points.add(point);
-            routePoints.put(routeName, points);
+            points.add(mess);
+            routePoints.put(EditModeInfo.getRouteName(), points);
         }
+
+        source.sendSuccess(new StringTextComponent("Точка добавлена для маршрута " + EditModeInfo.getRouteName()), true);
+        return 1;
     }
+
 
     private static int deletePiont(CommandContext<CommandSource> context, int index) {
         CommandSource source = context.getSource();
-        if (!redcatMod) {
-            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута"));
-            return 0;
-        }
+//        if (!redcatMod) {
+//            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута"));
+//            return 0;
+//        }
 
         String currentRoute = EditModeInfo.getRouteName();
         if (!routePoints.containsKey(currentRoute)) {
@@ -190,18 +197,11 @@ public class BusDriverAdmin {
             return 0;
         }
 
-        // Удаление точки по индексу
-        points.remove(index);
+        // Удаление точки по индексу из массива
 
-        // Уменьшение индексов оставшихся точек
-        for (int i = index; i < listSize - 1; i++) {
-            String modifiedPoint = points.get(i);
-            String[] coordinates = modifiedPoint.split(" ");
-            int currentPointIndex = Integer.parseInt(coordinates[0]) - 1;
-            coordinates[0] = String.valueOf(currentPointIndex);
-            points.set(i, String.join(" ", coordinates));
-        }
-
+        //routePoints.getOrDefault(EditModeInfo.getRouteName(), EditModeInfo.getRouteName());
+        pointsOnly.remove(index - 1);
+        System.out.println(pointsOnly);
         source.sendSuccess(new StringTextComponent("Точка с индексом " + index + " удалена"), true);
         return 1;
 
@@ -209,8 +209,8 @@ public class BusDriverAdmin {
 
     private static int addItem(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
-        if (!redcatMod){
-            source.sendFailure(new StringTextComponent("Вы должны быть в режими редактирования маршрута"));
+        if (!redcatMod) {
+            source.sendFailure(new StringTextComponent("Вы должны быть в режиме редактирования маршрута"));
             return 0;
         }
         PlayerEntity player = Minecraft.getInstance().player;
@@ -222,7 +222,7 @@ public class BusDriverAdmin {
         itemsForRoute = routeItemMap.getOrDefault(EditModeInfo.getRouteName(), new ArrayList<>());
         itemsForRoute.add(itemNameLocation);
         routeItemMap.put(EditModeInfo.getRouteName(), itemsForRoute);
-        source.sendSuccess(new StringTextComponent("Добавлены предмет: " + itemsForRoute ), true);
+        source.sendSuccess(new StringTextComponent("Добавлены предмет: " + itemsForRoute), true);
 
         System.out.println(itemNameLocation);
         return 1;
@@ -265,7 +265,7 @@ public class BusDriverAdmin {
     private static int setReward(CommandContext<CommandSource> context, int reward) {
         CommandSource source = context.getSource();
         if (!redcatMod) {
-            source.sendFailure(new StringTextComponent("Вы должны быть в режими редактирования маршрута"));
+            source.sendFailure(new StringTextComponent("Вы должны быть в режиме редактирования маршрута"));
             return 0;
         } else if (reward < 0) {
             source.sendFailure(new StringTextComponent("Сумма не может быть отрицательной"));
@@ -277,7 +277,7 @@ public class BusDriverAdmin {
         return 1;
     }
 
-        private static int removeRout(CommandContext<CommandSource> context, String jobName, String routeName) {
+    private static int removeRout(CommandContext<CommandSource> context, String jobName, String routeName) {
         CommandSource source = context.getSource();
         if (redcatMod) {
             source.sendFailure(new StringTextComponent("Включен режим редактирования маршрута"));

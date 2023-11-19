@@ -74,7 +74,7 @@ public class BusDriverPlayer {
         CommandSource source = context.getSource();
         if (routesByJob.containsKey(jobName)) {
             if (BusDriverAdmin.redcatMod) {
-                source.sendFailure(new StringTextComponent("Вы находитесь в режими редактирования"));
+                source.sendFailure(new StringTextComponent("Вы находитесь в режиме редактирования"));
                 return 0;
             }
 
