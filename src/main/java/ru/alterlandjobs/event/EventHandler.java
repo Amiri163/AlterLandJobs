@@ -5,10 +5,13 @@ package ru.alterlandjobs.event;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,11 +25,14 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void onRenderWorldLast(RenderWorldLastEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         MatrixStack matrixStack = event.getMatrixStack();
         Matrix4f matrix4f = matrixStack.last().pose();
-        Vector3f vec3f1 = new Vector3f(255.0F, 0, 0); // Цвет луча (R, G, B)
+        Vector3f color = new Vector3f(255, 0, 0); // Цвет линии (R, G, B)
 
         matrixStack.pushPose();
         RenderSystem.enableBlend();
@@ -36,17 +42,27 @@ public class EventHandler {
 
         bufferBuilder.begin(3, DefaultVertexFormats.POSITION_COLOR);
 
-        // Начальные координаты луча
-        float startX = 212;
-        float startY = 10;
-        float startZ = 222;
+        double startX = 212; // Мировые координаты первой точки
+        double startY = 10;
+        double startZ = 222;
 
-        // Конечные координаты луча
-        float endY = 256;
+        PlayerEntity player = mc.player;
+        if (player != null) {
+            double playerX = player.getX();
+            double playerY = player.getY();
+            double playerZ = player.getZ();
 
-        // Добавление точек в буфер
-        bufferBuilder.vertex(matrix4f, startX, startY, startZ).color(vec3f1.x(), vec3f1.y(), vec3f1.z(), 1.0F).endVertex();
-        bufferBuilder.vertex(matrix4f, startX, endY, startZ).color(vec3f1.x(), vec3f1.y(), vec3f1.z(), 1.0F).endVertex();
+            // Корректировка координат относительно позиции игрока
+            startX -= playerX;
+            startY -= playerY;
+            startZ -= playerZ;
+        }
+
+        double endY = 256; // Ваша вторая координата по оси Y
+
+        // Добавление скорректированных точек в буфер
+        bufferBuilder.vertex(matrix4f, (float) startX, (float) startY, (float) startZ).color((int) color.x(), (int) color.y(), (int) color.z(), 255).endVertex();
+        bufferBuilder.vertex(matrix4f, (float) startX, (float) endY, (float) startZ).color((int) color.x(), (int) color.y(), (int) color.z(), 255).endVertex();
 
         tessellator.end();
 
@@ -56,5 +72,4 @@ public class EventHandler {
 
         matrixStack.popPose();
     }
-
 }
