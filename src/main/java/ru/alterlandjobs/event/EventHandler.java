@@ -1,12 +1,11 @@
 package ru.alterlandjobs.event;
 
-
-
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -18,15 +17,18 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.opengl.GL11;
 
 
 @Mod.EventBusSubscriber
 public class EventHandler {
 
+
     @SubscribeEvent
     public static void onRenderWorldLast(RenderWorldLastEvent event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
+
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
@@ -43,24 +45,29 @@ public class EventHandler {
         bufferBuilder.begin(3, DefaultVertexFormats.POSITION_COLOR);
 
         double startX = 212; // Мировые координаты первой точки
-        double startY = 10;
+        double startY = 40;
         double startZ = 222;
 
+        double endY = 150; // Ваша вторая координата по оси Y
+
         PlayerEntity player = mc.player;
-        if (player != null) {
-            double playerX = player.getX();
-            double playerY = player.getY();
-            double playerZ = player.getZ();
+        double playerX = player.getX();
+        double playerY = player.getY();
+        double playerZ = player.getZ();
 
-            // Корректировка координат относительно позиции игрока
-            startX -= playerX;
-            startY -= playerY;
-            startZ -= playerZ;
-        }
+        // Интерполяция между предыдущей и текущей позицией игрока
+        double interpolatedPlayerX = player.xo + (playerX - player.xo) * event.getPartialTicks();
+        double interpolatedPlayerY = player.yo + (playerY - player.yo) * event.getPartialTicks();
+        double interpolatedPlayerZ = player.zo + (playerZ - player.zo) * event.getPartialTicks();
 
-        double endY = 256; // Ваша вторая координата по оси Y
+        // Корректировка координат относительно интерполированной позиции игрока
+        startX -= interpolatedPlayerX + 0.5;
+        startY -= interpolatedPlayerY + 0.5;
+        startZ -= interpolatedPlayerZ + 0.5;
 
-        // Добавление скорректированных точек в буфер
+        endY -= interpolatedPlayerY;
+
+
         bufferBuilder.vertex(matrix4f, (float) startX, (float) startY, (float) startZ).color((int) color.x(), (int) color.y(), (int) color.z(), 255).endVertex();
         bufferBuilder.vertex(matrix4f, (float) startX, (float) endY, (float) startZ).color((int) color.x(), (int) color.y(), (int) color.z(), 255).endVertex();
 
