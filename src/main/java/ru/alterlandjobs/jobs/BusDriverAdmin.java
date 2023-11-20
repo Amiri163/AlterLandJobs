@@ -33,7 +33,7 @@ public class BusDriverAdmin {
     private static int indexSt;
 
     // не нужно сохранять
-    public static List<String> pointsOnly = new ArrayList<>();
+    public static Map<Integer, List<String>> pointsAndIndex = new HashMap<>();
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
@@ -114,13 +114,12 @@ public class BusDriverAdmin {
 //            return 0;
 //        }
         if (routePoints.containsKey(EditModeInfo.getRouteName())) {
-            pointsOnly = routePoints.get(EditModeInfo.getRouteName());
 
-            if (!pointsOnly.isEmpty()) {
-                Map<Integer, List<String>> pointsAndIndex = new HashMap<>(); // хранит индекс для точки в show
+            if (!points.isEmpty()) {
+                pointsAndIndex = new HashMap<>(); // хранит индекс для точки в show
 
-                for (int i = 0; i < pointsOnly.size(); i++)
-                    pointsAndIndex.put(i + 1, Collections.singletonList(pointsOnly.get(i)));
+                for (int i = 0; i < points.size(); i++)
+                    pointsAndIndex.put(i + 1, Collections.singletonList(points.get(i)));
 
                 for (Map.Entry<Integer, List<String>> entry : pointsAndIndex.entrySet()) {
                     Integer key = entry.getKey();
@@ -190,21 +189,18 @@ public class BusDriverAdmin {
             return 0;
         }
 
-        List<String> points = routePoints.get(currentRoute);
         int listSize = points.size();
         if (index >= listSize || index < 0) {
             source.sendFailure(new StringTextComponent("Указан недопустимый индекс точки"));
             return 0;
         }
 
-        // Удаление точки по индексу из массива
-
         //routePoints.getOrDefault(EditModeInfo.getRouteName(), EditModeInfo.getRouteName());
-        pointsOnly.remove(index - 1);
-        System.out.println(pointsOnly);
+        points.remove(index);
+        //pointsAndIndex.remove(index);
+
         source.sendSuccess(new StringTextComponent("Точка с индексом " + index + " удалена"), true);
         return 1;
-
     }
 
     private static int addItem(CommandContext<CommandSource> context) {
@@ -224,7 +220,6 @@ public class BusDriverAdmin {
         routeItemMap.put(EditModeInfo.getRouteName(), itemsForRoute);
         source.sendSuccess(new StringTextComponent("Добавлены предмет: " + itemsForRoute), true);
 
-        System.out.println(itemNameLocation);
         return 1;
     }
 

@@ -21,8 +21,8 @@ public class AlterLandJobs {
 
     public AlterLandJobs() {
         IEventBus modEventBus = MinecraftForge.EVENT_BUS;
-        LocalTime currentTime = LocalTime.now();
         modEventBus.addListener(this::registerCommands);
+
     }
     private void registerCommands(RegisterCommandsEvent event) {
         PlayerCommand.register(event.getDispatcher());
@@ -31,4 +31,5 @@ public class AlterLandJobs {
         BusDriverPlayer.register(event.getDispatcher());
         Base.register(event.getDispatcher());
     }
+
 }
