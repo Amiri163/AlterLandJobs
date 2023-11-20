@@ -16,26 +16,24 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.opengl.GL11;
 import ru.alterlandjobs.jobs.BusDriverAdmin;
-
 
 @Mod.EventBusSubscriber
 public class EventHandler {
-    static boolean flag = false;
+    public static boolean flag = false;
+    public static boolean flag2 = true;
 
     static int startXF; // Мировые координаты первой точки
     static int startYF;
     static int startZF;
+    static int i = 0;
 
     @SubscribeEvent
     public static void onRenderWorldLast(RenderWorldLastEvent event) {
@@ -47,29 +45,34 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayerEntity) {
-            ServerPlayerEntity player = (ServerPlayerEntity) event.player;
-            if (!BusDriverAdmin.points.isEmpty()) {
-                for (String coordinates : BusDriverAdmin.points) {
-                    String[] coords = coordinates.split(" ");
-                    if (coords.length < 3) {
-                        continue;
+        if (flag2) {
+            if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayerEntity) {
+                if (!BusDriverAdmin.points.isEmpty()) {
+                    ServerPlayerEntity player = (ServerPlayerEntity) event.player;
+
+                    int playerX = MathHelper.floor(player.getX());
+                    int playerY = MathHelper.floor(player.getY());
+                    int playerZ = MathHelper.floor(player.getZ());
+
+                    if (i < BusDriverAdmin.points.size()) {
+                        String coordinates1 = BusDriverAdmin.points.get(i);
+                        String[] coords2 = coordinates1.split(" ");
+
+                        int x = Integer.parseInt(coords2[0]);
+                        int y = Integer.parseInt(coords2[1]);
+                        int z = Integer.parseInt(coords2[2]);
+                        startXF = x;
+                        startYF = y;
+                        startZF = z;
+
+                        if (playerX == startXF && playerY == startYF && playerZ == startZF) {
+                            i++;
+                        }
+                    } else {
+                        i = 0; // Сбрасываем i до нуля, чтобы начать массив заново
                     }
-                    int x = Integer.parseInt(coords[0]);
-                    int y = Integer.parseInt(coords[1]);
-                    int z = Integer.parseInt(coords[2]);
-
-                    startXF = x;
-                    startYF = y;
-                    startZF = z;
-
-
                 }
-
-
-
             }
-
         }
     }
 
@@ -88,8 +91,6 @@ public class EventHandler {
         Vector3f color = new Vector3f(255, 0, 0); // Цвет линии (R, G, B)
 
         matrixStack.pushPose();
-        RenderSystem.enableBlend();
-        RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
 
         bufferBuilder.begin(3, DefaultVertexFormats.POSITION_COLOR);
@@ -119,8 +120,7 @@ public class EventHandler {
         particleManager.add(particle);
 
         tessellator.end();
-        RenderSystem.enableTexture();
-        RenderSystem.disableBlend();
+
         matrixStack.popPose();
     }
 }

@@ -15,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import ru.alterlandjobs.commands.AdminCommand;
 import ru.alterlandjobs.common.EditModeInfo;
+import ru.alterlandjobs.event.EventHandler;
 
 import java.util.*;
 
@@ -240,6 +241,7 @@ public class BusDriverAdmin {
         editModes.put(jobName + routeName, modeInfo);
         redcatMod = true;
 
+
         source.sendSuccess(new StringTextComponent("Режим редактирования для маршрута " + routeName + " в работе " + jobName + " включен"), true);
         return 1;
     }
@@ -249,6 +251,8 @@ public class BusDriverAdmin {
         if (redcatMod) {
             source.sendSuccess(new StringTextComponent("Вы вышли с режима редактирования"), true);
             redcatMod = false;
+            EventHandler.flag = true;
+            EventHandler.flag2 = false;
             return 0;
         }
         source.sendFailure(new StringTextComponent("Вы не находитесь в режиме редактирования"));
