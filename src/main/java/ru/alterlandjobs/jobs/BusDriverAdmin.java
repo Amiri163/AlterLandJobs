@@ -26,14 +26,14 @@ public class BusDriverAdmin {
 
     public static List<ResourceLocation> itemsForRoute = new ArrayList<>(); // предмет от маршрута
     public static List<Integer> awards = new ArrayList(); // Награда когда игрок на точке
-    static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
+    public static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
     static List<String> routeJob = new ArrayList<>(); // хранение маршрутов для значения из массива
 
     public static boolean redcatMod = false;
     private static int indexSt;
 
     // не нужно сохранять
-    public static Map<Integer, List<String>> pointsAndIndex = new HashMap<>();
+    public static Map<Integer, List<String>> pointsAndIndex = new HashMap<>(); // хранит ключ в виде индекса точки и корды точки
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
@@ -155,9 +155,9 @@ public class BusDriverAdmin {
 //        }
         PlayerEntity player = Minecraft.getInstance().player;
 
-        long playerX = Math.round(player.getX());
-        long playerY = Math.round(player.getY());
-        long playerZ = Math.round(player.getZ());
+        int playerX = (int) Math.floor(player.getX());
+        int playerY = (int) Math.floor(player.getY());
+        int playerZ = (int) Math.floor(player.getZ());
         String mess = playerX + " " + playerY + " " + playerZ;
 
         if (routePoints.containsKey(EditModeInfo.getRouteName())) {

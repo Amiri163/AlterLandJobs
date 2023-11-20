@@ -26,36 +26,50 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.opengl.GL11;
+import ru.alterlandjobs.jobs.BusDriverAdmin;
 
 
 @Mod.EventBusSubscriber
 public class EventHandler {
-    static boolean flag = true;
+    static boolean flag = false;
 
-    static double startXF = 212; // Мировые координаты первой точки
-    static double startYF = 70;
-    static double startZF = 222;
+    static int startXF; // Мировые координаты первой точки
+    static int startYF;
+    static int startZF;
 
     @SubscribeEvent
     public static void onRenderWorldLast(RenderWorldLastEvent event) {
-        if (flag)
-            renderLight(event.getMatrixStack(), event.getPartialTicks());
+        if (startXF != 0 || startZF != 0) {
+            if (!flag)
+                renderLight(event.getMatrixStack(), event.getPartialTicks());
+        }
     }
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayerEntity) {
             ServerPlayerEntity player = (ServerPlayerEntity) event.player;
+            if (!BusDriverAdmin.points.isEmpty()) {
+                for (String coordinates : BusDriverAdmin.points) {
+                    String[] coords = coordinates.split(" ");
+                    if (coords.length < 3) {
+                        continue;
+                    }
+                    int x = Integer.parseInt(coords[0]);
+                    int y = Integer.parseInt(coords[1]);
+                    int z = Integer.parseInt(coords[2]);
 
-            if (Math.round(player.getX()) == startXF && Math.round(player.getY()) == startYF && Math.round(player.getZ()) == startZF) {
+                    startXF = x;
+                    startYF = y;
+                    startZF = z;
 
-                startXF = 200; // Новые координаты для луча по оси X
-                startYF = 60;  // Новые координаты для луча по оси Y
-                startZF = 200;
 
-                flag = false;
+                }
+
+
 
             }
+
         }
     }
 
@@ -99,8 +113,9 @@ public class EventHandler {
 
         bufferBuilder.vertex(matrix4f, (float) startX, (float) startY, (float) startZ).color((int) color.x(), (int) color.y(), (int) color.z(), 255).endVertex();
         bufferBuilder.vertex(matrix4f, (float) startX, (float) endY, (float) startZ).color((int) color.x(), (int) color.y(), (int) color.z(), 255).endVertex();
-        Particle particle = particleManager.createParticle(ParticleTypes.EXPLOSION, startXF, startYF, startZF, 10, 10, 10);
-        particle.scale(0.1f); // Устанавливает размер партикла
+        Particle particle = particleManager.createParticle(ParticleTypes.EXPLOSION, startXF + 0.5,
+                startYF + 0.5, startZF + 0.5, 5, 5, 5);
+        particle.scale(0.2f); // Устанавливает размер партикла
         particleManager.add(particle);
 
         tessellator.end();
