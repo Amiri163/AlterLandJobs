@@ -24,6 +24,10 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import ru.alterlandjobs.jobs.BusDriverAdmin;
+import ru.alterlandjobs.jobs.BusDriverPlayer;
+
+import java.util.Collections;
+import java.util.List;
 
 @Mod.EventBusSubscriber
 public class EventHandler {
@@ -45,9 +49,13 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        System.out.println("yes1");
         if (flag2) {
+            System.out.println("yes2");
             if (event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayerEntity) {
+                System.out.println("yes3");
                 if (!BusDriverAdmin.points.isEmpty()) {
+                    System.out.println("yes4");
                     ServerPlayerEntity player = (ServerPlayerEntity) event.player;
 
                     int playerX = MathHelper.floor(player.getX());
@@ -55,8 +63,11 @@ public class EventHandler {
                     int playerZ = MathHelper.floor(player.getZ());
 
                     if (i < BusDriverAdmin.points.size()) {
-                        String coordinates1 = BusDriverAdmin.points.get(i);
-                        String[] coords2 = coordinates1.split(" ");
+                        System.out.println("yes5");
+                        List<String> coordinates1 = BusDriverAdmin.pointsAndIndex.getOrDefault(i, BusDriverAdmin.points);
+                        String coordsDitr = coordinates1.get(i);
+                        String[] coords2 = coordsDitr.split(" ");
+                        System.out.println(coordinates1);
 
                         int x = Integer.parseInt(coords2[0]);
                         int y = Integer.parseInt(coords2[1]);
@@ -66,9 +77,11 @@ public class EventHandler {
                         startZF = z;
 
                         if (playerX == startXF && playerY == startYF && playerZ == startZF) {
+                            System.out.println("yes6");
                             i++;
                         }
                     } else {
+                        System.out.println("no yes");
                         i = 0; // Сбрасываем i до нуля, чтобы начать массив заново
                     }
                 }

@@ -29,7 +29,7 @@ import static ru.alterlandjobs.jobs.BusDriverAdmin.*;
 
 public class BusDriverPlayer {
     public static boolean playerWork = true;
-    public static String routeNameG;
+    public static String routeNamePlayer;
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
@@ -76,7 +76,7 @@ public class BusDriverPlayer {
     }
 
     private static int joinJobsAndRoute(CommandContext<CommandSource> context, String jobName, String routeName) throws CommandSyntaxException {
-        routeNameG = routeName;
+        routeNamePlayer = routeName;
         CommandSource source = context.getSource();
         if (routesByJob.containsKey(jobName)) {
             if (BusDriverAdmin.redcatMod) {
@@ -129,7 +129,7 @@ public class BusDriverPlayer {
         EventHandler.flag2 = false;
         playerWork = true;
 
-        for (ResourceLocation item : routeItemMap.get(routeNameG)) {
+        for (ResourceLocation item : routeItemMap.get(routeNamePlayer)) {
             ItemStack itemStack = new ItemStack(ForgeRegistries.ITEMS.getValue(item));
             ItemStack airStack = ItemStack.EMPTY;
 
@@ -137,7 +137,6 @@ public class BusDriverPlayer {
 
             player.inventory.setItem(0, airStack);
             player.inventory.setItem(1, airStack);
-            System.out.println(item);
         }
         source.sendSuccess(new StringTextComponent("Вы уволились с маршрута"), true);
 

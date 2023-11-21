@@ -28,7 +28,7 @@ public class BusDriverAdmin {
     public static List<ResourceLocation> itemsForRoute = new ArrayList<>(); // предмет от маршрута
     public static List<Integer> awards = new ArrayList(); // Награда когда игрок на точке
     public static List<String> points = new ArrayList<>(); // Сами точки - элеметн массива с точками для путей
-    static List<String> routeJob = new ArrayList<>(); // хранение маршрутов для значения из массива
+    public static List<String> routeJob = new ArrayList<>(); // хранение маршрутов для значения из массива
 
     public static boolean redcatMod = false;
     private static int indexSt;
@@ -110,10 +110,10 @@ public class BusDriverAdmin {
     private static int pointsShow(CommandContext<CommandSource> context) {
         CommandSource source = context.getSource();
         // Проверяем наличие маршрута в routePoints
-        //        if (!redcatMod) {
-//            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута "));
-//            return 0;
-//        }
+                if (!redcatMod) {
+            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута "));
+            return 0;
+        }
         if (routePoints.containsKey(EditModeInfo.getRouteName())) {
 
             if (!points.isEmpty()) {
@@ -150,10 +150,10 @@ public class BusDriverAdmin {
     private static int setPoint(CommandContext<CommandSource> context, int index) {
         indexSt = index;
         CommandSource source = context.getSource();
-//        if (!redcatMod) {
-//            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута "));
-//            return 0;
-//        }
+        if (!redcatMod) {
+            source.sendFailure(new StringTextComponent("Вы должны находиться в режиме редактирования маршрута "));
+            return 0;
+        }
         PlayerEntity player = Minecraft.getInstance().player;
 
         int playerX = (int) Math.floor(player.getX());
